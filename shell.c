@@ -14,14 +14,15 @@ int exec(char ***cmd, int num_cmds){
   
   int pipes[(num_cmds-1)*2];
 
-  printf("\n");
-  
-  for(int i = 0; i < num_cmds; i++) {
-    for(int j = 0; j<sizeof(cmd[i]); j++){
-      printf("%s ",cmd[i][j]);
-    }
-    printf("\n");
-  }
+  /* for (int i = 0; i < num_cmds; i++) { */
+  /*   int j = 0; */
+  /*   while (cmd[i][j] != NULL) { */
+  /*     printf("%s ", cmd[i][j]); */
+  /*     j++; */
+  /*   } */
+  /*   printf("\n"); */
+  /* } */
+
   
   for (int i = 0; i < num_cmds - 1; i++) {
         if (pipe(pipes + i * 2) == -1) {
@@ -62,82 +63,95 @@ int exec(char ***cmd, int num_cmds){
   
 }
 
-
-int saveCMDs(char *input, char ***cmd){
-  
-  int CMDnum = 0;
-  char *token = strtok(input, "|");
-
+int getTokenNum(char *input, char *check){
+  char *str = strdup(input);
+  char *token = strtok(str,check);
+  int TKNnum = 0;
   while(token!=NULL){
-    CMDnum++;
-    token = strtok(NULL, "|");
+    TKNnum++;
+    token = strtok(NULL,check);
   }
+  free(str);
+  return TKNnum;
+}
 
-  *cmd = malloc(CMDnum * sizeof(char **));
+char **listSTR(char *input, char *check){
 
-  int cmdIndex = 0;
-  token = strtok(input,"|");
+  char *str = strdup(input);
+  int numTKN = getTokenNum(input,check);
+  int index = 0;
+  char **output = malloc((numTKN+1) * sizeof(char *));
+  char *token = strtok(str,check);
   while(token != NULL){
-    
     while(*token == ' '){
       token++;
     }
-    
-    char *end = token + strlen(token) - 1;
-    
-    while(end>token && *end == ' '){
+  
+    char *end = token + strlen(token) -1;
+    while(end > token && *end == ' '){
       end--;
     }
-    *(end+1)='\0';
-    
-    char *currentCMD = strdup(token);
-
-    (cmd)[cmdIndex] = malloc(100*sizeof(char*));
-    int argnum=0;
-    char *argtoken = strtok(currentCMD, " ");
-
-    while(argtoken!=NULL){
-      while(*argtoken==' '){
-	argtoken++;
-      }
-      char *argend = argtoken + strlen(argtoken) -1;
-      while(argend>argtoken && *argend == ' '){
-	argend--;
-      }
-      *(argend+1)='\0';
-      (cmd)[cmdIndex][argnum++] = strdup(argtoken);
-      argtoken = strtok(NULL," ");
-    }
-
-    (cmd)[cmdIndex][argnum]=NULL;
-
-    cmdIndex++;
-
-    token = strtok(NULL,"|");
+    *(end + 1)='\0';
+    output[index++] = strdup(token);
+    token = strtok(NULL,check);
   }
-  (cmd)[cmdIndex] = NULL;
-  
+  output[numTKN]=NULL;
+  free(str);
+  return output;
+}
 
-  return CMDnum;
+int saveCMDs(char *input, char ****cmd){
+
+  int numCMDs = getTokenNum(input,"|");
+  char **CMDs = listSTR(input, "|");
+  (*cmd) = malloc(numCMDs*sizeof(char***));
+  for(int i = 0; i < numCMDs; i++){
+    int numARGs = getTokenNum(CMDs[i]," ");
+    char **ARGs = listSTR(CMDs[i], " ");
+    (*cmd)[i] = malloc((numARGs+1) * sizeof(char**));
+    for(int j = 0; j < numARGs; j++){
+      (*cmd)[i][j] = strdup(ARGs[j]);
+    }
+    (*cmd)[i][numARGs] = NULL;
+    
+    for (int j = 0; j < numARGs; j++) {
+      free(ARGs[j]);
+    }
+    free(ARGs);
+  }
+
+  for (int i = 0; i < numCMDs; i++) {
+    free(CMDs[i]);
+  }
+  free(CMDs);
+  return numCMDs;
 }
 
 
 int main(){
 
   char input[MAXCMDSIZE];
-  char ***cmd = malloc(MAXCMDSIZE*sizeof(char**));
+  char ***cmd;
 
   while(1){
     printf("shell > ");
     fgets(input,sizeof(input),stdin);
     input[strcspn(input, "\n")] = '\0';
     
-    int cmdsq = saveCMDs(input,cmd);
+    int cmdsq = saveCMDs(input,&cmd);
     
     if(strcmp(input,"exit")==0){
       break;
     }
     exec(cmd,cmdsq);
+
+    for (int i = 0; i < cmdsq; i++) {
+      for (int j = 0; cmd[i][j] != NULL; j++) {
+	free(cmd[i][j]);
+      }
+      free(cmd[i]);
+    }
+    free(cmd);
   }
   
   
