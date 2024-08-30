@@ -8,12 +8,14 @@
 #define MAXCMDSIZE 1024
 
 
-int exec(char ***cmd, int num_cmds){
+int exec(char ***cmd, int num_cmds){ //Función que toma arreglos de comandos que contienen una lista de argumentos y la cantidad de comandos y los ejecuta
 
   int status;
   
   int pipes[(num_cmds-1)*2];
 
+  //Código para ver los comandos que se ejecutarán
+  
   /* for (int i = 0; i < num_cmds; i++) { */
   /*   int j = 0; */
   /*   while (cmd[i][j] != NULL) { */
@@ -24,38 +26,47 @@ int exec(char ***cmd, int num_cmds){
   /* } */
 
   
-  for (int i = 0; i < num_cmds - 1; i++) {
+  for (int i = 0; i < num_cmds - 1; i++) { //Creación de pipes
         if (pipe(pipes + i * 2) == -1) {
             perror("pipe");
             exit(EXIT_FAILURE);
         }
     }
+
+
+  // Cada pipe tiene entrada y salida para un comando
+  // Ejemplo
+  // pipes[0] : entrada de 1er comando
+  // pipes[1] : salida de 1er comando
+  // pipes[2] : entrada de 2do comando
+  // pipes[3] : salida de 2do comando ...
   
-  for(int x=0; x<num_cmds; x++){
-    pid_t pid = fork();
+  
+  for(int x = 0; x < num_cmds; x++){
+    pid_t pid = fork(); // Creación de hijo que ejecutara el comando en la posición x
     if (pid == 0) {
       
-      if(x>0){
+      if(x>0){  //Duplica entradas de pipes
 	dup2(pipes[(x-1)*2],STDIN_FILENO);
       }
-      if(x<num_cmds-1){
+      if(x<num_cmds-1){ //Duplica salida de pipes
 	dup2(pipes[2*x+1],STDOUT_FILENO);
       }
       
 
-      for (int i=0; i<(num_cmds-1)*2; i++){
+      for (int i=0; i<(num_cmds-1)*2; i++){ //Cerrar pipes en hijo
 	close(pipes[i]);
       }
       
-      execvp(cmd[x][0],cmd[x]);
+      execvp(cmd[x][0],cmd[x]); //Ejecución
       
       
     }  
   }
-  for(int i = 0; i < (num_cmds-1)*2;i++) {
+  for(int i = 0; i < (num_cmds-1)*2;i++) { //Cerrar pipies en padre
     close(pipes[i]);
   }
-  for (int x = 0; x < num_cmds; x++) {
+  for (int x = 0; x < num_cmds; x++) { //Esperar hijos
     wait(&status);
   }
 
@@ -63,7 +74,7 @@ int exec(char ***cmd, int num_cmds){
   
 }
 
-int getTokenNum(char *input, char *check){
+int getTokenNum(char *input, char *check){ //Función que recibe un string y cuenta los elementos separados por el string check
   char *str = strdup(input);
   char *token = strtok(str,check);
   int TKNnum = 0;
@@ -75,7 +86,7 @@ int getTokenNum(char *input, char *check){
   return TKNnum;
 }
 
-char **listSTR(char *input, char *check){
+char **listSTR(char *input, char *check){ //Función que devuelve un array con strings separados por el string check
 
   char *str = strdup(input);
   int numTKN = getTokenNum(input,check);
@@ -100,7 +111,7 @@ char **listSTR(char *input, char *check){
   return output;
 }
 
-int saveCMDs(char *input, char ****cmd){
+int saveCMDs(char *input, char ****cmd){ //Función que guarda los array comandos que contienen sus array de argumentos
 
   int numCMDs = getTokenNum(input,"|");
   char **CMDs = listSTR(input, "|");
@@ -132,11 +143,14 @@ int main(){
 
   char input[MAXCMDSIZE];
   char ***cmd;
+  FILE *log = fopen("log.txt","w");
 
   while(1){
     printf("shell > ");
     fgets(input,sizeof(input),stdin);
     input[strcspn(input, "\n")] = '\0';
+    fputs(input,log);
+    fputs("\n",log);
     
     int cmdsq = saveCMDs(input,&cmd);
     
