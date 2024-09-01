@@ -1,0 +1,4 @@
+hola
+cd
+hola buenas
+ls -l
