@@ -2,3 +2,8 @@ hola
 cd
 hola buenas
 ls -l
+
+holaaaaa
+Esto se guardó desde la shell ;)
+.
+test

@@ -1,9 +1,5 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<sys/wait.h>
-#include<string.h>
-#include<stdbool.h>
+#include "header.h"
+#include "prb.c"
 
 #define MAXCMDSIZE 1024
 
@@ -153,11 +149,17 @@ int main(){
     fputs("\n",log);
     
     int cmdsq = saveCMDs(input,&cmd);
-    
-    if(strcmp(input,"exit")==0){
-      break;
+
+    if(strcmp(input, "favourites")==0){
+      favourites();
     }
+    else if(strcmp(input,"exit")==0){
+      break;
+    } else {
+    
     exec(cmd,cmdsq);
+
+    }
 
     for (int i = 0; i < cmdsq; i++) {
       for (int j = 0; cmd[i][j] != NULL; j++) {
