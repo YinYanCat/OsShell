@@ -18,4 +18,8 @@ int setFAV(char **input, int largo, const char *archivotexto);
 
 char *getFAV(char **input, const char *archivotexto);
 
-int favourites();
+void seeFAV(const char *archivotexto);
+
+void delFAV(const char *archivotexto);
+
+int favourites(char *inputcmd);

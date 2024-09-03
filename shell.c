@@ -150,20 +150,22 @@ int main(){
     
     int cmdsq = saveCMDs(input,&cmd);
 
-    if(strcmp(input, "favourites")==0){
-      favourites();
-    }
-    else if(strcmp(input,"exit")==0){
-      break;
-    } else {
-    
-    exec(cmd,cmdsq);
+    if(strlen(input) != 0){
+      if((cmd[0][0], "favs")==0){
+        favourites(input);
+      }
 
+      else if(strcmp(input,"exit")==0){
+        break;
+      }
+      else{
+        exec(cmd,cmdsq);
+      }
     }
 
     for (int i = 0; i < cmdsq; i++) {
       for (int j = 0; cmd[i][j] != NULL; j++) {
-	free(cmd[i][j]);
+	      free(cmd[i][j]);
       }
       free(cmd[i]);
     }
