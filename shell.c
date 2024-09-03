@@ -55,8 +55,8 @@ int exec(char ***cmd, int num_cmds){ //Función que toma arreglos de comandos qu
       }
       
       execvp(cmd[x][0],cmd[x]); //Ejecución
-      
-      
+      perror(cmd[x][0]);	
+      exit(1);
     }  
   }
   for(int i = 0; i < (num_cmds-1)*2;i++) { //Cerrar pipies en padre
@@ -134,15 +134,28 @@ int saveCMDs(char *input, char ****cmd){ //Función que guarda los array comando
   return numCMDs;
 }
 
+void change_directory(char *dir) {
+  if(strcmp(dir, "~")==0) {
+    chdir(getenv("HOME"));
+  }
+  else {
+    if(chdir(dir)!=0)
+      perror(dir);  
+  }
+}
+
 
 int main(){
 
   char input[MAXCMDSIZE];
+  char cwd[MAXCMDSIZE];
   char ***cmd;
   FILE *log = fopen("log.txt","w");
+  chdir(getenv("HOME"));
 
   while(1){
-    printf("shell > ");
+    getcwd(cwd, sizeof(cwd));
+    printf("\e[1;32mNewShell\e[0m:\e[1;35m%s\e[0m> ", cwd);
     fgets(input,sizeof(input),stdin);
     input[strcspn(input, "\n")] = '\0';
     fputs(input,log);
@@ -151,13 +164,17 @@ int main(){
     int cmdsq = saveCMDs(input,&cmd);
 
     if(strlen(input) != 0){
-      if((cmd[0][0], "favs")==0){
+      if(strcmp(cmd[0][0], "cd")==0)
+        change_directory(cmd[0][1]);
+      else if(strcmp(cmd[0][0], "favs")==0)
         favourites(input);
-      }
-
-      else if(strcmp(input,"exit")==0){
+      else if(strcmp(input,"owo")==0)
+        printf("owo\n");
+      else if(strcmp(input,"never")==0) {
+        printf("Never gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\n");
+        printf("Never gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\n");
+      } else if(strcmp(input,"exit")==0)
         break;
-      }
       else{
         exec(cmd,cmdsq);
       }
@@ -171,6 +188,8 @@ int main(){
     }
     free(cmd);
   }
+}
+
   
   
 
