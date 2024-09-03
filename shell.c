@@ -145,7 +145,7 @@ void change_directory(char *dir) {
 }
 
 
-int main(){
+int main() {
 
   char input[MAXCMDSIZE];
   char cwd[MAXCMDSIZE];
@@ -188,9 +188,4 @@ int main(){
     }
     free(cmd);
   }
-}
-
-  
-  
-
 }
