@@ -1,5 +1,6 @@
 #include "header.h"
 #include "prb.c"
+#include "reminder.c"
 
 #define MAXCMDSIZE 1024
 
@@ -168,16 +169,14 @@ int main() {
         change_directory(cmd[0][1]);
       else if(strcmp(cmd[0][0], "favs")==0)
         favourites(input);
-      else if(strcmp(input,"owo")==0)
-        printf("owo\n");
-      else if(strcmp(input,"never")==0) {
-        printf("Never gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\n");
-        printf("Never gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\n");
-      } else if(strcmp(input,"exit")==0)
+      else if(strcmp(cmd[0][0],"set")==0)
+        set_recordatorio(input, cmd[0]);
+      else if(strcmp(input,"never")==0)
+        never_lyrics();
+      else if(strcmp(input,"exit")==0)
         break;
-      else{
+      else
         exec(cmd,cmdsq);
-      }
     }
 
     for (int i = 0; i < cmdsq; i++) {
