@@ -4,7 +4,6 @@
 
 #define MAXCMDSIZE 1024
 
-
 int exec(char ***cmd, int num_cmds){ //Función que toma arreglos de comandos que contienen una lista de argumentos y la cantidad de comandos y los ejecuta
 
   int status;
@@ -146,8 +145,8 @@ void change_directory(char *dir) {
 }
 
 
-int main() {
-
+int main(int argc, char *argv[]) {
+  program_name = strdup(argv[0]);
   char input[MAXCMDSIZE];
   char cwd[MAXCMDSIZE];
   char user[100];

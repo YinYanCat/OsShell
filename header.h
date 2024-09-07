@@ -6,6 +6,8 @@
 #include<stdbool.h>
 #include<ctype.h>
 
+char *program_name;
+
 int exec(char ***cmd, int num_cmds);
 
 int getTokenNum(char *input, char *check);

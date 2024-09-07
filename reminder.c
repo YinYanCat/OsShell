@@ -15,7 +15,7 @@ int set_recordatorio(char **cmd, int size) {
 	  if (pid == 0) {
 	    pid_t TermPid = fork();
 	    if(TermPid==0){
-	      char *shell[] = {"./shell",0};
+	      char *shell[] = {program_name,0};
 	      execvp(shell[0],shell);
 	    }else{
 	      sleep(seconds);
