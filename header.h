@@ -24,6 +24,6 @@ void delFAV(const char *archivotexto);
 
 int favourites(char *inputcmd);
 
-void set_recordatorio(char *input, char **cmd);
+int set_recordatorio(char **cmd, int size);
 
 void never_lyrics();

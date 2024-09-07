@@ -150,31 +150,42 @@ int main() {
 
   char input[MAXCMDSIZE];
   char cwd[MAXCMDSIZE];
+  char user[100];
+  getlogin_r(user,100);
   char ***cmd;
-  FILE *log = fopen("log.txt","w");
+  FILE *log = fopen("log.txt","a");
   chdir(getenv("HOME"));
 
   while(1){
     getcwd(cwd, sizeof(cwd));
-    printf("\e[1;32mNewShell\e[0m:\e[1;35m%s\e[0m> ", cwd);
+    printf("\e[1;32m%s\e[0m:\e[1;35m%s\e[0m> ", user,cwd);
     fgets(input,sizeof(input),stdin);
     input[strcspn(input, "\n")] = '\0';
     fputs(input,log);
+    fputs("\0",log);
     fputs("\n",log);
-    
     int cmdsq = saveCMDs(input,&cmd);
 
     if(strlen(input) != 0){
-      if(strcmp(cmd[0][0], "cd")==0)
-        change_directory(cmd[0][1]);
-      else if(strcmp(cmd[0][0], "favs")==0)
+      if(strcmp(cmd[0][0], "cd")==0){
+	if(cmd[0][1]!=NULL){
+	  change_directory(cmd[0][1]);
+	} else {
+	  printf("Directorio no especificado\n");
+	}
+      }
+      else if(strcmp(cmd[0][0], "favs")==0){
         favourites(input);
-      else if(strcmp(cmd[0][0],"set")==0)
-        set_recordatorio(input, cmd[0]);
-      else if(strcmp(input,"never")==0)
+      }
+      else if(strcmp(cmd[0][0],"set")==0){
+        set_recordatorio(cmd[0],getTokenNum(input," "));
+      }
+      else if(strcmp(input,"never")==0){
         never_lyrics();
-      else if(strcmp(input,"exit")==0)
+      }
+      else if(strcmp(input,"exit")==0){
         break;
+      }
       else
         exec(cmd,cmdsq);
     }
