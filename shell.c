@@ -167,17 +167,18 @@ int main(int argc, char *argv[]) {
 
     if(strlen(input) != 0){
       if(strcmp(cmd[0][0], "cd")==0){
-	if(cmd[0][1]!=NULL){
-	  change_directory(cmd[0][1]);
-	} else {
-	  printf("Directorio no especificado\n");
-	}
+	      if(cmd[0][1]!=NULL){
+	        change_directory(cmd[0][1]);
+	      } 
+        else {
+	        printf("Directorio no especificado\n");
+	      }
       }
       else if(strcmp(cmd[0][0], "favs")==0){
         favourites(input);
       }
       else if(strcmp(cmd[0][0],"set")==0){
-        set_recordatorio(cmd[0],getTokenNum(input," "));
+        set_recordatorio(cmd[0],getTokenNum(input," favs "));
       }
       else if(strcmp(input,"never")==0){
         never_lyrics();

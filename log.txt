@@ -186,3 +186,110 @@ set rec 30
 
 k
 exit
+hola
+hola
+ls
+cDocuments
+hola
+hola
+favs
+favs
+ls
+favs cargar
+exit
+hola
+set rec 10 holaa
+wenas
+set rec 10 holaa
+set rec 10 holaa
+pwd
+exit
+hlas
+hlas
+
+
+
+
+
+
+
+
+
+
+
+
+fuckl
+hlas
+
+
+
+
+
+
+
+
+
+
+
+
+fuckl
+set rec 1000 
+rec
+hlas
+
+
+
+
+
+
+
+
+
+
+
+
+fuckl
+set rec 1000 
+rec
+rec set 10 bu
+hlas
+
+
+
+
+
+
+
+
+
+
+
+
+fuckl
+set rec 1000 
+rec
+rec set 10 bu
+set rec 10 bu
+cd Documents}
+ls
+cd Music
+set rec 10 bu
+set recordatorio 10 bu
+cd Documents}
+ls
+cd Music
+set rec 10 bu
+set recordatorio 10 bu
+set recordatorio 10 bu
+cd Documents}
+ls
+cd Music
+set rec 10 bu
+set recordatorio 10 bu
+set recordatorio 10 bu
+lsfavs
+favs
+set recordatorio 20 bu
+favs mostrar
+never
+xd

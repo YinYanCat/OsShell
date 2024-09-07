@@ -9,7 +9,7 @@ int set_recordatorio(char **cmd, int size) {
 
     int status;
     if(size>=3) {
-    	if(strcmp(cmd[1],"rec")==0) {
+    	if(strcmp(cmd[1],"recordatorio")==0) {
 	  int seconds = atoi(cmd[2]);
 	  pid_t pid = fork();
 	  if (pid == 0) {

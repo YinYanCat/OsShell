@@ -4,6 +4,25 @@
 #define MAXLINE 1024
 
 
+/*bool copySEARCH(const char *archivotexto, char **comando){
+    FILE *archivo = fopen(archivotexto, "r");
+
+    if(archivo == NULL){
+        printf("NO se pudo abrir el archivo");
+        return false;
+    }
+    bool save = 1;
+    char linea[MAXLINE];
+    while(fgets(linea, MAXLINE, archivo)){
+        if(strcmp(linea, comando) == 0){
+            printf("Comando ya guardado\n");
+            save = 0;
+        }
+    }
+    fclose(archivo);
+    return save;
+}*/
+
 int setFAV(char **input, int largo, const char *archivotexto) {
     FILE *archivo = fopen(archivotexto, "a");
 
@@ -33,7 +52,7 @@ void seeFAV(const char *archivotexto){
     int numlinea = 1;
     char linea[MAXLINE];
     while(fgets(linea, MAXLINE, archivo)){
-        printf("%d: %s", numlinea, linea);
+        printf("%d: %s\n", numlinea, linea);
         numlinea++;
     }
     fclose(archivo);
@@ -56,8 +75,7 @@ char *getFAV(char **input, const char *archivotexto) {
         return NULL;
     }
     
-    int num_comando = atoi(input[1]); // Convertir la cadena a un número entero
-
+    int num_comando = atoi(input[2]); // Convertir la cadena a un número entero
     char *linea = malloc(MAXLINE);
     if (linea == NULL) {
         printf("Error al asignar memoria.\n");
@@ -86,7 +104,6 @@ int favourites(char *inputcmd) {
     //strdup
     char input[MAXCMDSIZE];
     strncpy(input, inputcmd, sizeof(input) - 1);
-    fgets(input, sizeof(input), stdin);
     input[strcspn(input, "\n")] = 0;  // Elimina el salto de línea al final de la entrada
 
     int esp = getTokenNum(input, " ");
@@ -103,11 +120,10 @@ int favourites(char *inputcmd) {
         if(strcmp(st[1], "borrar") == 0){
             delFAV(nombreArchivo);
         }
-        if (st[2] != NULL && strcmp(st[2], "ejecutar") == 0) { // para leer un favorito se usa "f"
+        if(strcmp(st[1], "ejecutar") == 0 && st[2] != NULL) { // para leer un favorito se usa "f"
             char *resultado = getFAV(st, nombreArchivo);
             if (resultado != NULL) {
-                printf("Resultado: %s\n", resultado);
-                free(resultado);
+
             }
         }
     }
