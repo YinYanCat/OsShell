@@ -198,4 +198,5 @@ int main(int argc, char *argv[]) {
     }
     free(cmd);
   }
+  fclose(log);
 }

@@ -4,42 +4,72 @@
 #define MAXLINE 1024
 
 
-/*bool copySEARCH(const char *archivotexto, char **comando){
+// Función auxiliar para contar elementos en un arreglo de punteros (asumiendo terminación con NULL)
+int contarElementos(char **arr) {
+    int count = 0;
+    while (arr[count] != NULL) {
+        count++;
+    }
+    return count;
+}
+
+bool copySEARCH(const char *archivotexto, char **comando) {
     FILE *archivo = fopen(archivotexto, "r");
 
-    if(archivo == NULL){
-        printf("NO se pudo abrir el archivo");
+    if (archivo == NULL) {
+        printf("No se pudo abrir el archivo.\n");
         return false;
     }
-    bool save = 1;
-    char linea[MAXLINE];
-    while(fgets(linea, MAXLINE, archivo)){
-        if(strcmp(linea, comando) == 0){
-            printf("Comando ya guardado\n");
-            save = 0;
+
+    bool save = false;
+    char linea[MAXLINE];  // Corregido: Es un arreglo de char, no un puntero a puntero
+    char comandostr[MAXCMDSIZE];  // Corregido: Usar tamaño fijo para el string concatenado
+    
+    // Inicializar comandostr
+    comandostr[0] = '\0'; // Asegurarse de que está vacío
+    for (int i = 0; i < contarElementos(comando); i++) {
+        strcat(comandostr, comando[i]);
+        if (i < contarElementos(comando) - 1) {
+            strcat(comandostr, " ");
         }
     }
+
+    while (fgets(linea, MAXLINE, archivo)) {
+        // Eliminar el salto de línea al final de la línea leída
+        linea[strcspn(linea, "\n")] = '\0';
+
+        if (strcmp(linea, comandostr) == 0) {
+            save = true;
+            break;
+        }
+    }
+
     fclose(archivo);
     return save;
-}*/
+}
 
-int setFAV(char **input, int largo, const char *archivotexto) {
-    FILE *archivo = fopen(archivotexto, "a");
+void setFAV(char **input, int largo, const char *archivotexto) {
+    if (!copySEARCH(archivotexto, input)) {
+        FILE *archivo = fopen(archivotexto, "a");
 
-    if (archivo == NULL) {
-        printf("No se pudo abrir el archivo :(\n");
-        return 1;
-    }
-    for (int i = 2; i < largo; i++) {
-        fprintf(archivo, "%s", input[i]);
-        if (i < largo - 1) {
-            fprintf(archivo, " ");
+        if (archivo == NULL) {
+            printf("No se pudo abrir el archivo :(\n");
+            return;
         }
-    }
-    fprintf(archivo, "\n");
-    fclose(archivo);
+        
+        // Escribir el comando en el archivo
+        for (int i = 2; i < largo; i++) {
+            fprintf(archivo, "%s", input[i]);
+            if (i < largo - 1) {
+                fprintf(archivo, " ");
+            }
+        }
+        fprintf(archivo, "\n");
+        fclose(archivo);
 
-    return 0;
+    } else {
+        printf("Comando ya guardado\n");
+    }
 }
 
 void seeFAV(const char *archivotexto){
@@ -114,11 +144,14 @@ int favourites(char *inputcmd) {
         if(strcmp(st[1], "guardar") == 0) { // para guardar en favoritos se usa "favs guardar"
             setFAV(st, esp, nombreArchivo);
         }
-        if(strcmp(st[1], "mostrar") == 0){// para imprimir los favoritos guardados en terminal
+        if(strcmp(st[1], "cargar") == 0){// para imprimir los favoritos guardados en terminal
             seeFAV(nombreArchivo);
         } 
         if(strcmp(st[1], "borrar") == 0){
             delFAV(nombreArchivo);
+        }
+        if(strcmp(st[1], "mostrar") == 0){
+            seeFAV("log.txt");
         }
         if(strcmp(st[1], "ejecutar") == 0 && st[2] != NULL) { // para leer un favorito se usa "f"
             char *resultado = getFAV(st, nombreArchivo);
@@ -139,3 +172,6 @@ int favourites(char *inputcmd) {
     
     return 0;
 }
+
+
+//Documents/SO/OsShell 

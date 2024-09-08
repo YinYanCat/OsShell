@@ -293,3 +293,16 @@ set recordatorio 20 bu
 favs mostrar
 never
 xd
+cd Documents cd SO
+
+cd ..
+cd Documents/SO/OsSHELL
+ls
+cd Documents
+ls
+cd SO
+ls
+cd OsShell
+cd ..
+cd ..
+ cd..

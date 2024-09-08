@@ -16,7 +16,7 @@ char **listSTR(char *input, char *check);
 
 int saveCMDs(char *input, char ****cmd);
 
-int setFAV(char **input, int largo, const char *archivotexto);
+void setFAV(char **input, int largo, const char *archivotexto);
 
 char *getFAV(char **input, const char *archivotexto);
 
@@ -29,3 +29,5 @@ int favourites(char *inputcmd);
 int set_recordatorio(char **cmd, int size);
 
 void never_lyrics();
+
+bool copySEARCH(const char *archivotexto, char **comando);
