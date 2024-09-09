@@ -5,6 +5,7 @@
 #include<string.h>
 #include<stdbool.h>
 #include<ctype.h>
+#include <linux/limits.h>
 
 char *program_name;
 
@@ -16,20 +17,22 @@ char **listSTR(char *input, char *check);
 
 int saveCMDs(char *input, char ****cmd);
 
-void setFAV(char **input, int largo, FILE *archivo);
+void setFAV(char **input, int largo, const char *archivotexto, char* fileroute);
 
-char *getFAV(char **input, FILE *archivo);
+char *getFAV(char **input, const char *archivotexto, char* fileroute);
 
-void seeFAV(FILE *archivo);
+void seeFAV(const char *archivotexto, char* fileroute);
 
-void delFAV(FILE *archivo);
+void delFAV(const char *archivotexto, char* fileroute);
 
-int favourites(char *inputcmd, FILE *archivo, FILE *log);
+int favourites(char *inputcmd, char* filename, char* fileroute, FILE *log);
+
+void change_directory(char *dir);
 
 int set_recordatorio(char **cmd, int size);
 
 void never_lyrics();
 
-bool copySEARCH(FILE *archivo, char **comando);
+bool copySEARCH(const char *archivotexto, char* fileroute, char **comando);
 
-void savelogFAV(FILE *archivolog, FILE *archivofavs);
+void savelogFAV(char *filename, char* fileroute, FILE *archivolog);
