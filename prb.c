@@ -155,7 +155,7 @@ int favourites(char *inputcmd, FILE *archivo, FILE *log) {
             delFAV(archivo);
         }
       if(strcmp(st[1], "mostrar") == 0){
-            seeFAV(archivo);
+            seeFAV(log);
         }
       if (strcmp(st[1], "ejecutar") == 0 && st[2] != NULL) { // para leer un favorito se usa "f"
             char *resultado = getFAV(st, archivo);

@@ -176,25 +176,30 @@ int main(int argc, char *argv[]) {
 	      }
       }
       else if(strcmp(cmd[0][0], "favs")==0){
-	if(cmd[0][1]!=NULL){
-	  if(strcmp(cmd[0][1], "crear")==0){
-	    
-	    if(cmd[0][2]!=NULL){
-	      int size = getTokenNum(cmd[0][2],"/");
-	      char **ruta = listSTR(cmd[0][2],"/");
-	      if(size>1){
-		char lastdir[PATH_MAX];
-		getcwd(lastdir,sizeof(lastdir));
-		change_directory(listSTR(cmd[0][2],ruta[size-1])[0]);
-		archivo = fopen(ruta[size-1], "w+");
-		change_directory(lastdir);
+	      if(cmd[0][1]!=NULL){
+	        if(strcmp(cmd[0][1], "crear")==0){
+	          if(cmd[0][2]!=NULL){
+              int size = getTokenNum(cmd[0][2],"/");
+              char **ruta = listSTR(cmd[0][2],"/");
+              if(size>1){
+                char lastdir[PATH_MAX];
+                getcwd(lastdir,sizeof(lastdir));
+                change_directory(listSTR(cmd[0][2],ruta[size-1])[0]);
+                archivo = fopen(ruta[size-1], "w+");
+                change_directory(lastdir);
+	            }
+	            archivo = fopen(ruta[size-1], "w+");
+	          }
+	        } 
+          else {
+            if(archivo != NULL){
+              favourites(input,archivo,log);
+            }
+            else{
+              printf("No a creado ningun archivo para los favoritos\n");
+            }
+          }
 	      }
-	      archivo = fopen(ruta[size-1], "w+");
-	    }
-	  } else {
-	    favourites(input,archivo,log);
-	  }
-	}
       }
       
       else if(strcmp(cmd[0][0],"set")==0){
@@ -218,6 +223,6 @@ int main(int argc, char *argv[]) {
     }
     free(cmd);
   }
-  fclose(archivo)
+  fclose(archivo);
   fclose(log);
 }
