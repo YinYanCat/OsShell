@@ -1,7 +1,7 @@
 #include "header.h"
 #include "prb.c"
 #include "reminder.c"
-
+#include <linux/limits.h>
 #define MAXCMDSIZE 1024
 
 int exec(char ***cmd, int num_cmds){ //Función que toma arreglos de comandos que contienen una lista de argumentos y la cantidad de comandos y los ejecuta
@@ -153,6 +153,7 @@ int main(int argc, char *argv[]) {
   getlogin_r(user,100);
   char ***cmd;
   FILE *log = fopen("log.txt","a");
+  FILE *archivo = NULL;
   chdir(getenv("HOME"));
 
   while(1){
@@ -175,8 +176,27 @@ int main(int argc, char *argv[]) {
 	      }
       }
       else if(strcmp(cmd[0][0], "favs")==0){
-        favourites(input);
+	if(cmd[0][1]!=NULL){
+	  if(strcmp(cmd[0][1], "crear")==0){
+	    
+	    if(cmd[0][2]!=NULL){
+	      int size = getTokenNum(cmd[0][2],"/");
+	      char **ruta = listSTR(cmd[0][2],"/");
+	      if(size>1){
+		char lastdir[PATH_MAX];
+		getcwd(lastdir,sizeof(lastdir));
+		change_directory(listSTR(cmd[0][2],ruta[size-1])[0]);
+		archivo = fopen(ruta[size-1], "w+");
+		change_directory(lastdir);
+	      }
+	      archivo = fopen(ruta[size-1], "w+");
+	    }
+	  } else {
+	    favourites(input,archivo,log);
+	  }
+	}
       }
+      
       else if(strcmp(cmd[0][0],"set")==0){
         set_recordatorio(cmd[0],getTokenNum(input," favs "));
       }
@@ -198,5 +218,6 @@ int main(int argc, char *argv[]) {
     }
     free(cmd);
   }
+  fclose(archivo)
   fclose(log);
 }

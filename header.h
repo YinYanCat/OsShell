@@ -16,18 +16,20 @@ char **listSTR(char *input, char *check);
 
 int saveCMDs(char *input, char ****cmd);
 
-void setFAV(char **input, int largo, const char *archivotexto);
+void setFAV(char **input, int largo, FILE *archivo);
 
-char *getFAV(char **input, const char *archivotexto);
+char *getFAV(char **input, FILE *archivo);
 
-void seeFAV(const char *archivotexto);
+void seeFAV(FILE *archivo);
 
-void delFAV(const char *archivotexto);
+void delFAV(FILE *archivo);
 
-int favourites(char *inputcmd);
+int favourites(char *inputcmd, FILE *archivo, FILE *log);
 
 int set_recordatorio(char **cmd, int size);
 
 void never_lyrics();
 
-bool copySEARCH(const char *archivotexto, char **comando);
+bool copySEARCH(FILE *archivo, char **comando);
+
+void savelogFAV(FILE *archivolog, FILE *archivofavs);
