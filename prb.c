@@ -1,234 +1,219 @@
 #include "header.h"
+#include "prb.c"
+#include "reminder.c"
 
 #define MAXCMDSIZE 1024
-#define MAXLINE 1024
 
+int exec(char ***cmd, int num_cmds){ //Función que toma arreglos de comandos que contienen una lista de argumentos y la cantidad de comandos y los ejecuta
 
-// Función auxiliar para contar elementos en un arreglo de punteros (asumiendo terminación con NULL)
-int contarElementos(char **arr) {
-    int count = 0;
-    while (arr[count] != NULL) {
-        count++;
-    }
-    return count;
-}
+  int status;
+  
+  int pipes[(num_cmds-1)*2];
 
+  //Código para ver los comandos que se ejecutarán
+  
+  /* for (int i = 0; i < num_cmds; i++) { */
+  /*   int j = 0; */
+  /*   while (cmd[i][j] != NULL) { */
+  /*     printf("%s ", cmd[i][j]); */
+  /*     j++; */
+  /*   } */
+  /*   printf("\n"); */
+  /* } */
 
-bool copySEARCH(const char *archivotexto, char* fileroute, char **comando) {
-    
-    char lastdir[PATH_MAX];
-    getcwd(lastdir,sizeof(lastdir));
-    change_directory(fileroute);
-    FILE *archivo = fopen(archivotexto, "r");
-    if (archivo == NULL) {
-        printf("No se pudo abrir el archivo.\n");
-        return false;
-    }
-
-    bool save = false;
-    char linea[MAXLINE];  // Corregido: Es un arreglo de char, no un puntero a puntero
-    char comandostr[MAXCMDSIZE];  // Corregido: Usar tamaño fijo para el string concatenado
-    
-    // Inicializar comandostr
-    comandostr[0] = '\0'; // Asegurarse de que está vacío
-    for (int i = 0; i < contarElementos(comando); i++) {
-        strcat(comandostr, comando[i]);
-        if (i < contarElementos(comando) - 1) {
-            strcat(comandostr, " ");
+  
+  for (int i = 0; i < num_cmds - 1; i++) { //Creación de pipes
+        if (pipe(pipes + i * 2) == -1) {
+            perror("pipe");
+            exit(EXIT_FAILURE);
         }
     }
 
-    while (fgets(linea, MAXLINE, archivo)) {
-        // Eliminar el salto de línea al final de la línea leída
-        linea[strcspn(linea, "\n")] = '\0';
 
-        if (strcmp(linea, comandostr) == 0) {
-            save = true;
-            break;
-        }
-    }
-
-    fclose(archivo);
-    change_directory(lastdir);
-    return save;
-}
-
-void savelogFAV(char *filename, char* fileroute, FILE *archivolog){
+  // Cada pipe tiene entrada y salida para un comando
+  // Ejemplo
+  // pipes[0] : entrada de 1er comando
+  // pipes[1] : salida de 1er comando
+  // pipes[2] : entrada de 2do comando
+  // pipes[3] : salida de 2do comando ...
   
-  char lastdir[PATH_MAX];
-  getcwd(lastdir,sizeof(lastdir));
-  change_directory(fileroute);
-  FILE *archivofavs = fopen(filename, "w");
   
-  if( archivofavs == NULL || archivolog == NULL){
-    printf("archivo nulo, no se pudo guardar");
-    return;
-  } 
-
-  char linealog[MAXLINE], lineafavs[MAXLINE];
-  while(fgets(linealog, MAXLINE, archivolog)){
-    int secopia = 0;
-    rewind(archivofavs);
-    while(fgets(lineafavs, MAXLINE, archivofavs)){
-      if(strcmp(linealog, lineafavs) == 0){
-	secopia = 1;
-	break;
-            }
-        }
-    if(secopia == 0){
-      fprintf(archivofavs, "%s", linealog);
-    }
-  }
-  fclose(archivofavs);
-}
-
-void setFAV(char **input, int largo, const char *archivotexto, char* fileroute) {
-  if (!copySEARCH(archivotexto,fileroute, input)) {
-      char lastdir[PATH_MAX];
-      getcwd(lastdir,sizeof(lastdir));
-      change_directory(fileroute);
-      FILE *archivo = fopen(archivotexto, "a");
+  for(int x = 0; x < num_cmds; x++){
+    pid_t pid = fork(); // Creación de hijo que ejecutara el comando en la posición x
+    if (pid == 0) {
       
-      if (archivo == NULL) {
-	printf("No se pudo abrir el archivo :(\n");
-	return;
+      if(x>0){  //Duplica entradas de pipes
+	dup2(pipes[(x-1)*2],STDIN_FILENO);
+      }
+      if(x<num_cmds-1){ //Duplica salida de pipes
+	dup2(pipes[2*x+1],STDOUT_FILENO);
       }
       
-      // Escribir el comando en el archivo
-      for (int i = 2; i < largo; i++) {
-	fprintf(archivo, "%s", input[i]);
-	if (i < largo - 1) {
-	  fprintf(archivo, " ");
-	}
+
+      for (int i=0; i<(num_cmds-1)*2; i++){ //Cerrar pipes en hijo
+	close(pipes[i]);
       }
-      fprintf(archivo, "\n");
-      fclose(archivo);
-      change_directory(lastdir);
       
-    } else {
-      printf("Comando ya guardado\n");
+      execvp(cmd[x][0],cmd[x]); //Ejecución
+      perror(cmd[x][0]);	
+      exit(1);
+    }  
+  }
+  for(int i = 0; i < (num_cmds-1)*2;i++) { //Cerrar pipies en padre
+    close(pipes[i]);
+  }
+  for (int x = 0; x < num_cmds; x++) { //Esperar hijos
+    wait(&status);
+  }
+
+  return 0;
+  
+}
+
+int getTokenNum(char *input, char *check){ //Función que recibe un string y cuenta los elementos separados por el string check
+  char *str = strdup(input);
+  char *token = strtok(str,check);
+  int TKNnum = 0;
+  while(token!=NULL){
+    TKNnum++;
+    token = strtok(NULL,check);
+  }
+  free(str);
+  return TKNnum;
+}
+
+char **listSTR(char *input, char *check){ //Función que devuelve un array con strings separados por el string check
+
+  char *str = strdup(input);
+  int numTKN = getTokenNum(input,check);
+  int index = 0;
+  char **output = malloc((numTKN+1) * sizeof(char *));
+  char *token = strtok(str,check);
+  while(token != NULL){
+    while(*token == ' '){
+      token++;
     }
-}
-
-void seeFAV(const char *archivotexto, char* fileroute){
-  char lastdir[PATH_MAX];
-  getcwd(lastdir,sizeof(lastdir));
-  change_directory(fileroute);
-  FILE *archivo = fopen( archivotexto, "r");
   
-  if (archivo == NULL) {
-    printf("No se pudo abrir el archivo :(\n");
-    return;
+    char *end = token + strlen(token) -1;
+    while(end > token && *end == ' '){
+      end--;
+    }
+    *(end + 1)='\0';
+    output[index++] = strdup(token);
+    token = strtok(NULL,check);
   }
-  int numlinea = 1;
-  char linea[MAXLINE];
-  while(fgets(linea, MAXLINE, archivo)){
-    printf("%d: %s\n", numlinea, linea);
-        numlinea++;
-  }
-  fclose(archivo);
+  output[numTKN]=NULL;
+  free(str);
+  return output;
 }
 
-void delFAV(const char *archivotexto, char* fileroute){ //borra todos los comandos de los favoritos
-  char lastdir[PATH_MAX];
-  getcwd(lastdir,sizeof(lastdir));
-  change_directory(fileroute);
-  
-  if (remove(archivotexto) == 0){
-    printf("Deleted successfully");
-  }else{
-    printf("Unable to delete the file");
-  }
-  change_directory(lastdir);
-}
+int saveCMDs(char *input, char ****cmd){ //Función que guarda los array comandos que contienen sus array de argumentos
 
-
-char *getFAV(char **input, const char *archivotexto, char* fileroute) {
-  char lastdir[PATH_MAX];
-  getcwd(lastdir,sizeof(lastdir));
-  change_directory(fileroute);
-  FILE *archivo = fopen(archivotexto, "r");
-  if (archivo == NULL) {
-    printf("No se pudo leer el archivo :(\n");
-    return NULL;
-  }
+  int numCMDs = getTokenNum(input,"|");
+  char **CMDs = listSTR(input, "|");
+  (*cmd) = malloc(numCMDs*sizeof(char***));
+  for(int i = 0; i < numCMDs; i++){
+    int numARGs = getTokenNum(CMDs[i]," ");
+    char **ARGs = listSTR(CMDs[i], " ");
+    (*cmd)[i] = malloc((numARGs+1) * sizeof(char**));
+    for(int j = 0; j < numARGs; j++){
+      (*cmd)[i][j] = strdup(ARGs[j]);
+    }
+    (*cmd)[i][numARGs] = NULL;
     
-  int num_comando = atoi(input[2]); // Convertir la cadena a un número entero
-  char *linea = malloc(MAXLINE);
-  if (linea == NULL) {
-    printf("Error al asignar memoria.\n");
-    fclose(archivo);
-    change_directory(lastdir);
-    return NULL;
-  }
-  
-  int contador = 1;
-    while (fgets(linea, MAXLINE, archivo) != NULL) {
-      if (contador == num_comando) {
-	// Eliminar el salto de línea al final, si existe
-	linea[strcspn(linea, "\n")] = 0;
-	fclose(archivo);
-	change_directory(lastdir);
-	return linea;
-      }
-      contador++;
+    for (int j = 0; j < numARGs; j++) {
+      free(ARGs[j]);
     }
-    
-    printf("Usted posee menos de %d comando favoritos.\n", num_comando);
-    free(linea);
-    fclose(archivo);
-    change_directory(lastdir);
-    return NULL;
+    free(ARGs);
+  }
+
+  for (int i = 0; i < numCMDs; i++) {
+    free(CMDs[i]);
+  }
+  free(CMDs);
+  return numCMDs;
 }
 
-int favourites(char *inputcmd, char* filename, char* fileroute, FILE *log) {
-  //strdup
+void change_directory(char *dir) {
+  if(strcmp(dir, "~")==0) {
+    chdir(getenv("HOME"));
+  }
+  else {
+    if(chdir(dir)!=0)
+      perror(dir);  
+  }
+}
+
+
+int main(int argc, char *argv[]) {
+  program_name = strdup(argv[0]);
   char input[MAXCMDSIZE];
-    strncpy(input, inputcmd, sizeof(input) - 1);
-    input[strcspn(input, "\n")] = 0;  // Elimina el salto de línea al final de la entrada
-    
-    int esp = getTokenNum(input, " ");
-    char **st = listSTR(input, " ");
+  char cwd[MAXCMDSIZE];
+  char user[100];
+  getlogin_r(user,100);
+  char ***cmd;
+  FILE *log = fopen("log.txt","a");
+  int size;
+  char **ruta;
+  chdir(getenv("HOME"));
 
+  while(1){
+    getcwd(cwd, sizeof(cwd));
+    printf("\e[1;32m%s\e[0m:\e[1;35m%s\e[0m> ", user,cwd);
+    fgets(input,sizeof(input),stdin);
+    input[strcspn(input, "\n")] = '\0';
+    fputs(input,log);
+    fputs("\0",log);
+    fputs("\n",log);
+    int cmdsq = saveCMDs(input,&cmd);
 
-    if (strcmp(st[0], "favs") == 0 && st[1] != NULL){
-      
-      if(strcmp(st[1], "guardar") == 0) { // para guardar en favoritos se usa "favs guardar"
-	if(st[2] != NULL){
-	  setFAV(st, esp, filename, fileroute);
-	}
-	else{
-	  savelogFAV(filename, fileroute, log);
-	}
+    if(strlen(input) != 0){
+      if(strcmp(cmd[0][0], "cd")==0){
+	      if(cmd[0][1]!=NULL){
+	        change_directory(cmd[0][1]);
+	      } 
+        else {
+	        printf("Directorio no especificado\n");
+	      }
       }
-      if(strcmp(st[1], "cargar") == 0){// para imprimir los favoritos guardados en terminal
-            seeFAV(filename, fileroute);
-        } 
-      if(strcmp(st[1], "borrar") == 0){
-            delFAV(filename, fileroute);
-        }
-      if(strcmp(st[1], "mostrar") == 0){
-	seeFAV(filename, fileroute);
-        }
-      if (strcmp(st[1], "ejecutar") == 0 && st[2] != NULL) { // para leer un favorito se usa "f"
-            char *resultado = getFAV(st, filename, fileroute);
-            if (resultado != NULL) {
+      else if(strcmp(cmd[0][0], "favs")==0){
+	if(cmd[0][1]!=NULL){
+	  if(strcmp(cmd[0][1], "crear")==0){
+	    if(cmd[0][2]!=NULL){
+	      size = getTokenNum(cmd[0][2],"/");
+	      ruta = listSTR(cmd[0][2],"/");
+	      
+	      
+	      
+	    }
+	    
+	  }else{
+	    favourites(input,ruta[size-1],listSTR(cmd[0][2],ruta[size-1])[0],log);
+	  }
+	}
+	      
+      }
+      
+      else if(strcmp(cmd[0][0],"set")==0){
+        set_recordatorio(cmd[0],getTokenNum(input," favs "));
+      }
+      else if(strcmp(input,"never")==0){
+        never_lyrics();
+      }
+      else if(strcmp(input,"exit")==0){
+        break;
+      }
+      else
+        exec(cmd,cmdsq);
+    }
 
-            }
-        }
+    for (int i = 0; i < cmdsq; i++) {
+      for (int j = 0; cmd[i][j] != NULL; j++) {
+	      free(cmd[i][j]);
+      }
+      free(cmd[i]);
     }
-    else if(st[1] == NULL){
-        printf("Instrucción mal entregada, intente otra vez\n");
-    }
-    
-    // Liberar la memoria asignada para la lista de cadenas
-    for (int i = 0; i < esp; i++) {
-      free(st[i]);
-    }
-    free(st);
-    
-    return 0;
+    free(cmd);
+  }
+  fclose(log);
 }
-
-
-//Documents/SO/OsShell 
