@@ -144,7 +144,6 @@ void change_directory(char *dir) {
   }
 }
 
-
 int main(int argc, char *argv[]) {
   program_name = strdup(argv[0]);
   char input[MAXCMDSIZE];
@@ -152,7 +151,7 @@ int main(int argc, char *argv[]) {
   char user[100];
   getlogin_r(user,100);
   char ***cmd;
-  FILE *log = fopen("log.txt","a");
+  FILE *log = fopen("log.txt","w+");
   int size;
   char route[PATH_MAX];
   char *filename;
@@ -167,6 +166,10 @@ int main(int argc, char *argv[]) {
     fputs("\0",log);
     fputs("\n",log);
     int cmdsq = saveCMDs(input,&cmd);
+    fputs(input,log);
+    fputs("\0",log);
+    fputs("\n",log);
+  
 
     if(strlen(input) != 0){
       if(strcmp(cmd[0][0], "cd")==0){

@@ -58,7 +58,8 @@ void savelogFAV(char *filename, char* fileroute, FILE *archivolog){
   char lastdir[PATH_MAX];
   getcwd(lastdir,sizeof(lastdir));
   change_directory(fileroute);
-  FILE *archivofavs = fopen(filename, "w");
+  FILE *archivofavs = fopen(filename, "a");
+  rewind(archivolog);
   
   if( archivofavs == NULL || archivolog == NULL){
     printf("archivo nulo, no se pudo guardar");
@@ -67,19 +68,25 @@ void savelogFAV(char *filename, char* fileroute, FILE *archivolog){
 
   char linealog[MAXLINE], lineafavs[MAXLINE];
   while(fgets(linealog, MAXLINE, archivolog)){
-    int secopia = 0;
-    rewind(archivofavs);
-    while(fgets(lineafavs, MAXLINE, archivofavs)){
-      if(strcmp(linealog, lineafavs) == 0){
-	secopia = 1;
-	break;
-            }
+    if(strcmp(listSTR(linealog, " ")[0], "favs") == 0 || strcmp(linealog, "")){
+      continue;
+    }
+    else{
+      int secopia = 0;
+      rewind(archivofavs);
+      while(fgets(lineafavs, MAXLINE, archivofavs)){
+        if(strcmp(linealog, lineafavs) == 0){
+          secopia = 1;
+          break;
         }
-    if(secopia == 0){
-      fprintf(archivofavs, "%s", linealog);
+      }
+      if(secopia == 0){
+        fprintf(archivofavs, "%s", linealog);
+      }
     }
   }
   fclose(archivofavs);
+  rewind(archivolog);
   change_directory(lastdir);
 }
 
@@ -131,15 +138,28 @@ void seeFAV(const char *archivotexto, char* fileroute){
   change_directory(lastdir);
 }
 
+void seeLOG(FILE *log){  
+  if (log == NULL) {
+    printf("Archivo nulo:(\n");
+    return;
+  }
+  rewind(log);
+  int numlinea = 1;
+  char linea[MAXLINE];
+  while(fgets(linea, MAXLINE, log)){
+    printf("%d: %s\n", numlinea, linea);
+      numlinea++;
+  }
+  rewind(log);
+}
+
 void delFAV(const char *archivotexto, char* fileroute){ //borra todos los comandos de los favoritos
   char lastdir[PATH_MAX];
   getcwd(lastdir,sizeof(lastdir));
   change_directory(fileroute);
   
-  if (remove(archivotexto) == 0){
-    printf("Deleted successfully");
-  }else{
-    printf("Unable to delete the file");
+  if (remove(archivotexto) != 0){
+    printf("No se pudo borrar el archivo\n");
   }
   change_directory(lastdir);
 }
@@ -211,12 +231,21 @@ int favourites(char *inputcmd, char* filename, char* fileroute, FILE *log) {
             delFAV(filename, fileroute);
         }
       if(strcmp(st[1], "mostrar") == 0){
-	seeFAV(filename, fileroute);
+        seeLOG(log);
         }
       if (strcmp(st[1], "ejecutar") == 0 && st[2] != NULL) { // para leer un favorito se usa "f"
             char *resultado = getFAV(st, filename, fileroute);
             if (resultado != NULL) {
-
+              char ***cmd2;
+              int size = saveCMDs(resultado,&cmd2);
+              exec(cmd2, size);
+              for (int i = 0; i < size; i++) {
+                for (int j = 0; cmd2[i][j] != NULL; j++) {
+                  free(cmd2[i][j]);
+                }
+                free(cmd2[i]);
+              }
+              free(cmd2);
             }
         }
     }
