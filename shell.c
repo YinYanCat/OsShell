@@ -154,7 +154,8 @@ int main(int argc, char *argv[]) {
   char ***cmd;
   FILE *log = fopen("log.txt","a");
   int size;
-  char **ruta;
+  char route[PATH_MAX];
+  char *filename;
   chdir(getenv("HOME"));
 
   while(1){
@@ -176,26 +177,45 @@ int main(int argc, char *argv[]) {
 	        printf("Directorio no especificado\n");
 	      }
       }
-      else if(strcmp(cmd[0][0], "favs")==0){
-	if(cmd[0][1]!=NULL){
-	  if(strcmp(cmd[0][1], "crear")==0){
-	    if(cmd[0][2]!=NULL){
-	      size = getTokenNum(cmd[0][2],"/");
-	      ruta = listSTR(cmd[0][2],"/");
+      else if (strcmp(cmd[0][0], "favs") == 0) {
+	if (cmd[0][1] != NULL) {
+	  if (strcmp(cmd[0][1], "crear") == 0) {
+            if (cmd[0][2] != NULL) {
+	      char *path = cmd[0][2];
+	      filename = strrchr(path, '/');
+
+	      if (filename != NULL) {
+		strncpy(route, path, filename - path);
+		route[filename - path] = '\0';
+		filename++;
+	      } else {
+		strcpy(route, ".");  
+		filename = path;
+	      }
+	      filename = strdup(filename);
 	      
+	      char lastdir[PATH_MAX];
+	      getcwd(lastdir, sizeof(lastdir));
+	      change_directory(route);
 	      
-	      
-	    }
-	    
-	  }else{
-	    favourites(input,ruta[size-1],listSTR(cmd[0][2],ruta[size-1])[0],log);
+	      FILE *fp = fopen(filename, "w");
+	      if (fp == NULL) {
+		perror("No se pudo crear el archivo");
+	      } else {
+		fclose(fp);
+	      }
+
+	      change_directory(lastdir);
+            }
+	  } else {
+
+            favourites(input, filename, route, log); 
 	  }
 	}
-	      
       }
       
       else if(strcmp(cmd[0][0],"set")==0){
-        set_recordatorio(cmd[0],getTokenNum(input," favs "));
+        set_recordatorio(cmd[0],getTokenNum(input," "));
       }
       else if(strcmp(input,"never")==0){
         never_lyrics();

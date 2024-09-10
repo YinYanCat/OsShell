@@ -80,6 +80,7 @@ void savelogFAV(char *filename, char* fileroute, FILE *archivolog){
     }
   }
   fclose(archivofavs);
+  change_directory(lastdir);
 }
 
 void setFAV(char **input, int largo, const char *archivotexto, char* fileroute) {
@@ -127,6 +128,7 @@ void seeFAV(const char *archivotexto, char* fileroute){
         numlinea++;
   }
   fclose(archivo);
+  change_directory(lastdir);
 }
 
 void delFAV(const char *archivotexto, char* fileroute){ //borra todos los comandos de los favoritos
@@ -150,6 +152,7 @@ char *getFAV(char **input, const char *archivotexto, char* fileroute) {
   FILE *archivo = fopen(archivotexto, "r");
   if (archivo == NULL) {
     printf("No se pudo leer el archivo :(\n");
+    change_directory(lastdir);
     return NULL;
   }
     
